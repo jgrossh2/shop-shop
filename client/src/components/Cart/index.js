@@ -1,12 +1,28 @@
-import React from "react";
 import CartItem from "../CartItem";
 import Auth from "../../utils/auth";
 import "./style.css";
 import { useStoreContext } from "../../utils/GlobalState";
-import { TOGGLE_CART } from "../../utils/actions";
+import React, { useEffect } from "react";
+import { TOGGLE_CART, ADD_MULTIPLE_TO_CART } from "../../utils/actions";
+import { idbPromise } from "../../utils/helpers";
+
 const Cart = () => {
   // establishes a state variable
   const [state, dispatch] = useStoreContext();
+
+  useEffect(() => {
+    async function getCart() {
+      const cart = await idbPromise('cart', 'get');
+    //   array of items being returned from indexedDB
+    // save all products into global state object at once
+      dispatch({ type: ADD_MULTIPLE_TO_CART, products: [...cart] });
+    };
+  
+    if (!state.cart.length) {
+      getCart();
+    }
+    // useEffect will not continuously run due to adding state.cart.length in dependency array
+  }, [state.cart.length, dispatch]);
 
   function toggleCart() {
     // updates the state
